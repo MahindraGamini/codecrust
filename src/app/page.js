@@ -14,6 +14,7 @@ export default function InterviewEnvironment() {
   const [cameraStream, setCameraStream] = useState(null);
   const [code, setCode] = useState(`def two_sum(nums, target):\n    # Your solution here\n    pass`);
   const [thoughtProcess, setThoughtProcess] = useState("");
+  const [output, setOutput] = useState(""); // State to hold the output of the code execution
 
   const problem = {
     title: "Two Sum",
@@ -98,8 +99,27 @@ export default function InterviewEnvironment() {
     setCode(value);
   };
 
-  const handleRunCode = () => {
+  const handleRunCode = async () => {
     console.log("Running code:", code);
+
+    try {
+      const result = await mockRunPythonCode(code);
+      setOutput(result); 
+    } catch (err) {
+      setOutput("Error running code: " + err.message); 
+    }
+  };
+
+  const mockRunPythonCode = (code) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (code.includes("two_sum")) {
+          resolve("[0, 1]"); 
+        } else {
+          reject(new Error("Code execution error"));
+        }
+      }, 1000); 
+    });
   };
 
   return (
@@ -154,9 +174,9 @@ export default function InterviewEnvironment() {
         </div>
 
         <div className="w-1/2 p-4 flex flex-col">
-          <div className="flex-grow mb-4 border rounded">
+          <div className="flex-grow mb-4   border rounded">
             <Editor
-              height="60%"
+              height="100%"
               language="python"
               theme="vs-dark"
               value={code}
@@ -168,7 +188,13 @@ export default function InterviewEnvironment() {
             />
           </div>
 
-        
+          {output && (
+            <div className="mt-6 p-4 border-t bg-gray-50 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-2">Output:</h3>
+              <pre className="bg-gray-800 text-white p-3 rounded-md">{output}</pre>
+            </div>
+          )}
+
           <div className="mt-4">
             <h3 className="text-lg font-semibold mb-2">Thought Process</h3>
             <Textarea
@@ -195,14 +221,13 @@ export default function InterviewEnvironment() {
         )}
       </div>
 
-    
       <div className="mt-4 flex justify-end space-x-2 px-4">
         <Button
           onClick={isCameraOn ? stopCamera : startCamera}
           variant={isCameraOn ? "destructive" : "default"}
         >
           <Camera className="left-0" />
-          {isCameraOn ? "Stop Camera" : "Start Camera"}
+          {isCameraOn ? "Stop Recording" : "Start Recording"}
         </Button>
         <Button onClick={toggleFullscreen} variant="outline">
           {isFullscreen ? <Minimize2 /> : <Maximize2 />}

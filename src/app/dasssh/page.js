@@ -69,16 +69,15 @@ function LandingPage() {
         <CardHeader className="text-center pb-4">
           <CardTitle className="text-2xl font-bold text-blue-800 flex items-center justify-center gap-2">
             <Briefcase className="w-6 h-6" />
-            Job Search Portal
+          Code Crest
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-2">
-            Find your next career opportunity
+         Journey to Mastery
           </p>
         </CardHeader>
         
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Position Input */}
             <div className="space-y-2">
               <Label htmlFor="position" className="flex items-center gap-2">
                 <Briefcase className="w-4 h-4" />
@@ -103,7 +102,6 @@ function LandingPage() {
               )}
             </div>
 
-            {/* Level Select */}
             <div className="space-y-2">
               <Label htmlFor="level" className="flex items-center gap-2">
                 <BarChart className="w-4 h-4" />
@@ -137,13 +135,12 @@ function LandingPage() {
               )}
             </div>
 
-            {/* Submit Button */}
             <Button 
               type="submit" 
               className="w-full bg-blue-600 hover:bg-blue-700 transition-colors"
             >
               <SendHorizontal className="mr-2 w-4 h-4" />
-              Find Opportunities
+              Practice Now
             </Button>
           </form>
         </CardContent>
