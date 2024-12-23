@@ -51,16 +51,15 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Full width content area */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
         <Card className="w-full md:col-span-2">
           <CardContent className="p-6 min-h-[400px]">
-            {/* Progress chart or recent activity could go here */}
+          
           </CardContent>
         </Card>
         <Card className="w-full md:col-span-1">
           <CardContent className="p-6 min-h-[400px]">
-            {/* Additional metrics or information could go here */}
+           
           </CardContent>
         </Card>
       </div>
