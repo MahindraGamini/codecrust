@@ -1,0 +1,118 @@
+'use client'
+
+import React from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Code2, VideoIcon, Mic, BookOpen, Settings, LogOut, ChevronDown } from 'lucide-react'
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
+  useSidebar,
+} from '@/components/ui/sidebar'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+
+export function CodeCrestSidebar() {
+  const pathname = usePathname()
+
+  return (
+    <Sidebar className="border-r">
+      <SidebarHeader className="border-b border-border p-4">
+        <h2 className="text-lg font-semibold">CodeCrest</h2>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarMenu>
+          <Collapsible defaultOpen>
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton className="w-full">
+                  <Code2 className="h-4 w-4" />
+                  <span>DSA Practice</span>
+                  <ChevronDown className="ml-auto h-4 w-4" />
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton asChild>
+                      <Link href="/dsa-practice/arrays">Arrays</Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton asChild>
+                      <Link href="/dsa-practice/linked-lists">Linked Lists</Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton asChild>
+                      <Link href="/dsa-practice/trees">Trees</Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton asChild>
+                      <Link href="/dsa-practice/graphs">Graphs</Link>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/video-recording" className="flex items-center">
+                <VideoIcon className="h-4 w-4" />
+                <span> Recordings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+         
+
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/study-materials" className="flex items-center">
+                <BookOpen className="h-4 w-4" />
+                <span>Study Materials</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarContent>
+      
+      <SidebarFooter className="mt-auto border-t">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/settings" className="flex items-center">
+                <Settings className="h-4 w-4" />
+                <span>Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <button className="flex w-full items-center text-destructive">
+                <LogOut className="h-4 w-4" />
+                <span>Log out</span>
+              </button>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
+  )
+}
+
