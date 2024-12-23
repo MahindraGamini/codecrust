@@ -3,26 +3,16 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Code2, VideoIcon, Mic, BookOpen, Settings, LogOut, ChevronDown } from 'lucide-react'
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
-  useSidebar,
+import { 
+  Code2, VideoIcon, BookOpen, Settings, LogOut, ChevronDown 
+} from 'lucide-react'
+import { 
+  Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, 
 } from '@/components/ui/sidebar'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
+import { 
+  Collapsible, CollapsibleContent, CollapsibleTrigger, 
 } from "@/components/ui/collapsible"
+import { SignInButton, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs"
 
 export function CodeCrestSidebar() {
   const pathname = usePathname()
@@ -79,8 +69,6 @@ export function CodeCrestSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
 
-         
-
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link href="/study-materials" className="flex items-center">
@@ -94,25 +82,46 @@ export function CodeCrestSidebar() {
       
       <SidebarFooter className="mt-auto border-t">
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link href="/settings" className="flex items-center">
-                <Settings className="h-4 w-4" />
-                <span>Settings</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <button className="flex w-full items-center text-destructive">
-                <LogOut className="h-4 w-4" />
-                <span>Log out</span>
-              </button>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          <SignedOut>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <SignInButton>
+                  <button className="flex w-full items-center">
+                    <span>Log In</span>
+                  </button>
+                </SignInButton>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <SignUpButton>
+                  <button className="flex w-full items-center">
+                    <span>Sign Up</span>
+                  </button>
+                </SignUpButton>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SignedOut>
+          <SignedIn>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href="/settings" className="flex items-center">
+                  <Settings className="h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <button className="flex w-full items-center text-destructive">
+                  <LogOut className="h-4 w-4" />
+                  <span>Log out</span>
+                </button>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SignedIn>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   )
 }
-

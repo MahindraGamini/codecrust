@@ -14,7 +14,7 @@ export default function InterviewEnvironment() {
   const [cameraStream, setCameraStream] = useState(null);
   const [code, setCode] = useState(`def two_sum(nums, target):\n    # Your solution here\n    pass`);
   const [thoughtProcess, setThoughtProcess] = useState("");
-  const [output, setOutput] = useState(""); // State to hold the output of the code execution
+  const [output, setOutput] = useState("");
 
   const problem = {
     title: "Two Sum",
