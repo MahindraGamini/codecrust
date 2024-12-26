@@ -10,8 +10,11 @@ import { Camera, Minimize2, Maximize2 } from "lucide-react";
 export default function InterviewEnvironment() {
   const [isFullscreen, setIsFullscreen] = useState(true);
   const [isCameraOn, setIsCameraOn] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const videoRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
   const [cameraStream, setCameraStream] = useState(null);
+  const [recordedChunks, setRecordedChunks] = useState([]);
   const [code, setCode] = useState(`def two_sum(nums, target):\n    # Your solution here\n    pass`);
   const [thoughtProcess, setThoughtProcess] = useState("");
   const [output, setOutput] = useState("");
@@ -53,7 +56,7 @@ export default function InterviewEnvironment() {
         video: true,
         audio: true,
       });
-  
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setCameraStream(stream);
@@ -61,16 +64,10 @@ export default function InterviewEnvironment() {
       }
     } catch (err) {
       console.error("Error accessing camera:", err);
-      if (err.name === "NotAllowedError") {
-        alert("Please grant camera and microphone access in your browser settings.");
-      } else if (err.name === "NotFoundError") {
-        alert("No camera or microphone found.");
-      } else {
-        alert("An error occurred while accessing the camera. Please try again later.");
-      }
+      alert("An error occurred while accessing the camera. Please try again.");
     }
   };
-  
+
   const stopCamera = () => {
     if (cameraStream) {
       cameraStream.getTracks().forEach((track) => track.stop());
@@ -81,7 +78,57 @@ export default function InterviewEnvironment() {
       setIsCameraOn(false);
     }
   };
-  
+
+  const startRecording = () => {
+
+    const options = { mimeType: "video/webm; codecs=vp9" };
+    const mediaRecorder = new MediaRecorder(cameraStream, options);
+
+    mediaRecorderRef.current = mediaRecorder;
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        setRecordedChunks((prev) => [...prev, event.data]);
+      }
+    };
+
+    mediaRecorder.onstop = handleRecordingStop;
+    mediaRecorder.start();
+    setIsRecording(true);
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleRecordingStop = () => {
+    const blob = new Blob(recordedChunks, { type: "video/webm" });
+    uploadRecording(blob);
+    setRecordedChunks([]);
+  };
+
+  const uploadRecording = async (blob) => {
+    const formData = new FormData();
+    formData.append("file", blob, "recording.webm");
+
+    try {
+      const response = await fetch(" http://127.0.0.1:5000/extract_audio_video", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to upload recording.");
+
+      alert("Recording uploaded successfully!");
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert("Failed to upload recording.");
+    }
+  };
+
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -104,9 +151,9 @@ export default function InterviewEnvironment() {
 
     try {
       const result = await mockRunPythonCode(code);
-      setOutput(result); 
+      setOutput(result);
     } catch (err) {
-      setOutput("Error running code: " + err.message); 
+      setOutput("Error running code: " + err.message);
     }
   };
 
@@ -114,11 +161,11 @@ export default function InterviewEnvironment() {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         if (code.includes("two_sum")) {
-          resolve("[0, 1]"); 
+          resolve("[0, 1]");
         } else {
           reject(new Error("Code execution error"));
         }
-      }, 1000); 
+      }, 1000);
     });
   };
 
@@ -126,65 +173,17 @@ export default function InterviewEnvironment() {
     <div className="h-screen w-full flex flex-col">
       <div className="flex-grow flex">
         <div className="w-1/2 p-4 overflow-y-auto bg-gray-50">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                <span>{problem.title}</span>
-                <span
-                  className={`px-2 py-1 rounded-full text-sm font-bold ${
-                    problem.difficulty === "Easy"
-                      ? "bg-green-200 text-green-800"
-                      : problem.difficulty === "Medium"
-                      ? "bg-yellow-200 text-yellow-800"
-                      : "bg-red-200 text-red-800"
-                  }`}
-                >
-                  {problem.difficulty}
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-4">{problem.description}</p>
-
-              <h3 className="text-lg font-semibold mt-4 mb-2">Examples:</h3>
-              {problem.examples.map((example, index) => (
-                <div key={index} className="bg-gray-100 p-3 rounded mb-2">
-                  <p>
-                    <strong>Input:</strong> {example.input}
-                  </p>
-                  <p>
-                    <strong>Output:</strong> {example.output}
-                  </p>
-                  {example.explanation && (
-                    <p>
-                      <strong>Explanation:</strong> {example.explanation}
-                    </p>
-                  )}
-                </div>
-              ))}
-
-              <h3 className="text-lg font-semibold mt-4 mb-2">Constraints:</h3>
-              <ul className="list-disc pl-5">
-                {problem.constraints.map((constraint, index) => (
-                  <li key={index}>{constraint}</li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="w-1/2 p-4 flex flex-col">
-          <div className="flex-grow mb-4   border rounded">
+          <div className="flex-grow mb-4 border rounded">
             <Editor
               height="100%"
               language="python"
               theme="vs-dark"
               value={code}
               onChange={handleEditorChange}
-              options={{
-                minimap: { enabled: false },
-                fontSize: 14,
-              }}
+              options={{ minimap: { enabled: false }, fontSize: 14 }}
             />
           </div>
 
@@ -207,33 +206,28 @@ export default function InterviewEnvironment() {
         </div>
       </div>
 
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-black rounded-full shadow-lg overflow-hidden border border-gray-300">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          className={`w-full h-full object-cover ${!isCameraOn ? "hidden" : ""}`}
-        />
-        {!isCameraOn && (
-          <div className="absolute inset-0 flex items-center justify-center text-white text-sm">
-            Camera Off
-          </div>
-        )}
-      </div>
-
       <div className="mt-4 flex justify-end space-x-2 px-4">
         <Button
           onClick={isCameraOn ? stopCamera : startCamera}
           variant={isCameraOn ? "destructive" : "default"}
         >
-          <Camera className="left-0" />
-          {isCameraOn ? "Stop Recording" : "Start Recording"}
+          <Camera />
+          {isCameraOn ? "Stop Camera" : "Start Camera"}
+        </Button>
+        <Button
+          onClick={isRecording ? stopRecording : startRecording}
+          variant={isRecording ? "destructive" : "default"}
+          disabled={!isCameraOn}
+        >
+          {isRecording ? "Stop Recording" : "Start Recording"}
         </Button>
         <Button onClick={toggleFullscreen} variant="outline">
           {isFullscreen ? <Minimize2 /> : <Maximize2 />}
           {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
         </Button>
-        <Button variant="outline" onClick={() => setCode("")}>Reset</Button>
+        <Button variant="outline" onClick={() => setCode("")}>
+          Reset
+        </Button>
         <Button onClick={handleRunCode}>Run Code</Button>
       </div>
     </div>

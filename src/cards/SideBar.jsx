@@ -12,7 +12,7 @@ import {
 import { 
   Collapsible, CollapsibleContent, CollapsibleTrigger, 
 } from "@/components/ui/collapsible"
-import { SignInButton, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs"
+import { SignInButton, SignOutButton, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs"
 
 export function CodeCrestSidebar() {
   const pathname = usePathname()
@@ -113,10 +113,9 @@ export function CodeCrestSidebar() {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <button className="flex w-full items-center text-destructive">
-                  <LogOut className="h-4 w-4" />
-                  <span>Log out</span>
-                </button>
+                
+                  
+                <SignOutButton/>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SignedIn>
