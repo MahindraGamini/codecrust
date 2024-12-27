@@ -60,7 +60,8 @@ export default function InterviewEnvironment() {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setCameraStream(stream);
-        const recorder = new MediaRecorder(stream);
+        const options = { mimeType: "video/mp4" };
+        const recorder = new MediaRecorder(stream, options);
         setMediaRecorder(recorder);
         setIsCameraOn(true);
       }
@@ -104,7 +105,7 @@ export default function InterviewEnvironment() {
 
       mediaRecorder.onstop = () => {
         setIsRecording(false);
-        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        const blob = new Blob(recordedChunks, { type: "video/mp4" });
         uploadRecording(blob);
       };
     }
@@ -118,7 +119,7 @@ export default function InterviewEnvironment() {
 
   const uploadRecording = async (blob) => {
     const formData = new FormData();
-    formData.append("file", blob, "recording.webm");
+    formData.append("file", blob, "recording.mp4");
 
     try {
       const response = await fetch("http://127.0.0.1:5000/extract_audio_video", {
