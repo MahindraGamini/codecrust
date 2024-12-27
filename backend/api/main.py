@@ -1,0 +1,92 @@
+from flask import Flask, jsonify, request
+import json
+import os
+import traceback
+
+app = Flask(__name__)
+
+# Load the JSON data from a file
+PROBLEMS_FILE = 'fs.json'
+
+def load_problems():
+    try:
+        if not os.path.exists(PROBLEMS_FILE):
+            raise FileNotFoundError(f"{PROBLEMS_FILE} not found.")
+        
+        with open(PROBLEMS_FILE, 'r') as f:
+            data = json.load(f)
+
+        # Transform the JSON structure to create a topic-wise dictionary
+        problems = {}
+        for topic in data:  # Iterate through top-level objects
+            for key, value in topic.items():  # Access keys inside each top-level dictionary
+                if key.lower() not in problems:
+                    problems[key.lower()] = value  # Normalize keys for case-insensitivity
+                else:
+                    problems[key.lower()].extend(value)  # Append to existing key if needed
+        
+        print(f"Loaded problems: {problems}")  # Debugging: Print the structured data
+        return problems
+
+    except Exception as e:
+        print(f"Error loading JSON file: {str(e)}")
+        print(traceback.format_exc())
+        raise e
+
+
+@app.route('/api/topic/<string:topic>', methods=['GET'])
+def get_problems_by_topic(topic):
+    problems = load_problems()
+    print(f"Requested topic: {topic}")  # Debugging
+    print(f"Available topics: {list(problems.keys())}")  # Debugging
+
+    topic_problems = problems.get(topic.lower(), None)
+
+    if not topic_problems:
+        return jsonify({"error": f"No problems found for topic '{topic}'"}), 404
+
+    return jsonify({"problems": topic_problems})
+
+@app.route('/api/problems', methods=['GET'])
+def get_problems():
+    try:
+        problems = load_problems()
+        return jsonify(problems)
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 500
+    except json.JSONDecodeError as e:
+        return jsonify({"error": "Error parsing JSON file. Please check the file format."}), 500
+    except Exception as e:
+        # Log the full error traceback
+        print(f"Unexpected error: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+@app.route('/api/problem/<int:problem_id>', methods=['GET'])
+def get_problem_by_id(problem_id):
+    try:
+        problems = load_problems()
+        all_problems = [q for topic in problems.values() for q in topic]
+        problem = next((p for p in all_problems if p['id'] == problem_id), None)
+        
+        if problem is None:
+            return jsonify({"error": "Problem not found"}), 404
+
+        return jsonify(problem)
+
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 500
+    except json.JSONDecodeError as e:
+        return jsonify({"error": "Error parsing JSON file. Please check the file format."}), 500
+    except Exception as e:
+        # Log the full error traceback
+        print(f"Unexpected error: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "API is running"})
+
+if __name__ == '__main__':
+    app.run(debug=True)
