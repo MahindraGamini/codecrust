@@ -26,15 +26,14 @@ def extract_audio_and_analyze():
 
         cap = cv2.VideoCapture(video_path)
         frame_dir = "frames"
-        os.makedirs(frame_dir, exist_ok=True)
 
         frame_count = 0
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break
-            frame_path = os.path.join(frame_dir, f"frame_{frame_count:04d}.jpg")
-            cv2.imwrite(frame_path, frame)
+          
+            
             frame_count += 1
 
         cap.release()
