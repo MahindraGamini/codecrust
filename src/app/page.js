@@ -8,14 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Camera, Minimize2, Maximize2 } from "lucide-react";
 
 export default function InterviewEnvironment() {
-  const [isFullscreen, setIsFullscreen] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isCameraOn, setIsCameraOn] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const videoRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
   const [cameraStream, setCameraStream] = useState(null);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
   const [recordedChunks, setRecordedChunks] = useState([]);
-  const [code, setCode] = useState(`def two_sum(nums, target):\n    # Your solution here\n    pass`);
+  const [isRecording, setIsRecording] = useState(false);
+  const [code, setCode] = useState('def two_sum(nums, target):\n    # Your solution here\n    pass');
   const [thoughtProcess, setThoughtProcess] = useState("");
   const [output, setOutput] = useState("");
 
@@ -32,9 +32,9 @@ export default function InterviewEnvironment() {
       },
     ],
     constraints: [
-      "2 <= nums.length <= 104",
-      "-109 <= nums[i] <= 109",
-      "-109 <= target <= 109",
+      "2 <= nums.length <= 10^4",
+      "-10^9 <= nums[i] <= 10^9",
+      "-10^9 <= target <= 10^9",
     ],
   };
 
@@ -60,11 +60,19 @@ export default function InterviewEnvironment() {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setCameraStream(stream);
+        const recorder = new MediaRecorder(stream);
+        setMediaRecorder(recorder);
         setIsCameraOn(true);
       }
     } catch (err) {
       console.error("Error accessing camera:", err);
-      alert("An error occurred while accessing the camera. Please try again.");
+      if (err.name === "NotAllowedError") {
+        alert("Please grant camera and microphone access in your browser settings.");
+      } else if (err.name === "NotFoundError") {
+        alert("No camera or microphone found.");
+      } else {
+        alert("An error occurred while accessing the camera. Please try again later.");
+      }
     }
   };
 
@@ -77,37 +85,35 @@ export default function InterviewEnvironment() {
       setCameraStream(null);
       setIsCameraOn(false);
     }
-  };
-
-  const startRecording = () => {
-
-    const options = { mimeType: "video/webm; codecs=vp9" };
-    const mediaRecorder = new MediaRecorder(cameraStream, options);
-
-    mediaRecorderRef.current = mediaRecorder;
-
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        setRecordedChunks((prev) => [...prev, event.data]);
-      }
-    };
-
-    mediaRecorder.onstop = handleRecordingStop;
-    mediaRecorder.start();
-    setIsRecording(true);
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      mediaRecorder.stop();
     }
   };
 
-  const handleRecordingStop = () => {
-    const blob = new Blob(recordedChunks, { type: "video/webm" });
-    uploadRecording(blob);
-    setRecordedChunks([]);
+  const startRecording = () => {
+    if (mediaRecorder && mediaRecorder.state === "inactive") {
+      setRecordedChunks([]);
+      mediaRecorder.start();
+      setIsRecording(true);
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          setRecordedChunks((prev) => [...prev, event.data]);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        setIsRecording(false);
+        const blob = new Blob(recordedChunks, { type: "video/webm" });
+        uploadRecording(blob);
+      };
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      mediaRecorder.stop();
+    }
   };
 
   const uploadRecording = async (blob) => {
@@ -115,17 +121,18 @@ export default function InterviewEnvironment() {
     formData.append("file", blob, "recording.webm");
 
     try {
-      const response = await fetch(" http://127.0.0.1:5000/extract_audio_video", {
+      const response = await fetch("http://127.0.0.1:5000/extract_audio_video", {
         method: "POST",
         body: formData,
       });
 
-      if (!response.ok) throw new Error("Failed to upload recording.");
-
-      alert("Recording uploaded successfully!");
-    } catch (err) {
-      console.error("Upload error:", err);
-      alert("Failed to upload recording.");
+      if (response.ok) {
+        alert("Video uploaded successfully!");
+      } else {
+        alert("Failed to upload video.");
+      }
+    } catch (error) {
+      console.error("Error uploading video:", error);
     }
   };
 
@@ -173,8 +180,50 @@ export default function InterviewEnvironment() {
     <div className="h-screen w-full flex flex-col">
       <div className="flex-grow flex">
         <div className="w-1/2 p-4 overflow-y-auto bg-gray-50">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex justify-between items-center">
+                <span>{problem.title}</span>
+                <span
+                  className={`px-2 py-1 rounded-full text-sm font-bold ${
+                    problem.difficulty === "Easy"
+                      ? "bg-green-200 text-green-800"
+                      : problem.difficulty === "Medium"
+                      ? "bg-yellow-200 text-yellow-800"
+                      : "bg-red-200 text-red-800"
+                  }`}
+                >
+                  {problem.difficulty}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4">{problem.description}</p>
+              <h3 className="text-lg font-semibold mt-4 mb-2">Examples:</h3>
+              {problem.examples.map((example, index) => (
+                <div key={index} className="bg-gray-100 p-3 rounded mb-2">
+                  <p>
+                    <strong>Input:</strong> {example.input}
+                  </p>
+                  <p>
+                    <strong>Output:</strong> {example.output}
+                  </p>
+                  {example.explanation && (
+                    <p>
+                      <strong>Explanation:</strong> {example.explanation}
+                    </p>
+                  )}
+                </div>
+              ))}
+              <h3 className="text-lg font-semibold mt-4 mb-2">Constraints:</h3>
+              <ul className="list-disc pl-5">
+                {problem.constraints.map((constraint, index) => (
+                  <li key={index}>{constraint}</li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         </div>
-
         <div className="w-1/2 p-4 flex flex-col">
           <div className="flex-grow mb-4 border rounded">
             <Editor
@@ -183,17 +232,18 @@ export default function InterviewEnvironment() {
               theme="vs-dark"
               value={code}
               onChange={handleEditorChange}
-              options={{ minimap: { enabled: false }, fontSize: 14 }}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+              }}
             />
           </div>
-
           {output && (
             <div className="mt-6 p-4 border-t bg-gray-50 rounded-lg shadow-md">
               <h3 className="text-lg font-semibold mb-2">Output:</h3>
               <pre className="bg-gray-800 text-white p-3 rounded-md">{output}</pre>
             </div>
           )}
-
           <div className="mt-4">
             <h3 className="text-lg font-semibold mb-2">Thought Process</h3>
             <Textarea
@@ -205,28 +255,30 @@ export default function InterviewEnvironment() {
           </div>
         </div>
       </div>
-
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-black rounded-full shadow-lg overflow-hidden border border-gray-300">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          className={`${!isCameraOn ? "hidden" : "w-full h-full object-cover"}`}
+        />
+        {!isCameraOn && (
+          <div className="absolute inset-0 flex items-center justify-center text-white text-sm">
+            Camera Off
+          </div>
+        )}
+      </div>
       <div className="mt-4 flex justify-end space-x-2 px-4">
-        <Button
-          onClick={isCameraOn ? stopCamera : startCamera}
-          variant={isCameraOn ? "destructive" : "default"}
-        >
-          <Camera />
+        <Button onClick={isCameraOn ? stopCamera : startCamera} variant={isCameraOn ? "destructive" : "default"}>
+          <Camera className="mr-2" />
           {isCameraOn ? "Stop Camera" : "Start Camera"}
         </Button>
-        <Button
-          onClick={isRecording ? stopRecording : startRecording}
-          variant={isRecording ? "destructive" : "default"}
-          disabled={!isCameraOn}
-        >
-          {isRecording ? "Stop Recording" : "Start Recording"}
-        </Button>
         <Button onClick={toggleFullscreen} variant="outline">
-          {isFullscreen ? <Minimize2 /> : <Maximize2 />}
+          {isFullscreen ? <Minimize2 className="mr-2" /> : <Maximize2 className="mr-2" />}
           {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
         </Button>
-        <Button variant="outline" onClick={() => setCode("")}>
-          Reset
+        <Button onClick={isRecording ? stopRecording : startRecording}>
+          {isRecording ? "Stop Recording" : "Start Recording"}
         </Button>
         <Button onClick={handleRunCode}>Run Code</Button>
       </div>
