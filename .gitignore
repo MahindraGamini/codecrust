@@ -14,7 +14,7 @@
 /coverage
 node_modules/
 
-frames/
+/frames
 # next.js
 /.next/
 /out/
