@@ -119,23 +119,33 @@ export default function InterviewEnvironment() {
 
   const uploadRecording = async (blob) => {
     const formData = new FormData();
-    formData.append("file", blob, "recording.mp4");
-
+    formData.append("file", blob, "uploaded_video.mp4");
+  
     try {
       const response = await fetch("http://127.0.0.1:5000/extract_audio_video", {
         method: "POST",
         body: formData,
+        mode: "cors",
       });
-
+  
+    
+      const responseClone = response.clone();
+      console.log("Response clone:", await responseClone.json());
+  
       if (response.ok) {
-        alert("Video uploaded successfully!");
+        const data = await response.json();
+        console.log("Response Data:", data);
+        alert("Video uploaded and processed successfully!");
       } else {
-        alert("Failed to upload video.");
+        const errorData = await response.json();
+        console.error("Error Data:", errorData);
+        alert(`Failed to upload video: ${errorData.error}`);
       }
     } catch (error) {
       console.error("Error uploading video:", error);
     }
   };
+  
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -257,12 +267,13 @@ export default function InterviewEnvironment() {
         </div>
       </div>
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-black rounded-full shadow-lg overflow-hidden border border-gray-300">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          className={`${!isCameraOn ? "hidden" : "w-full h-full object-cover"}`}
-        />
+      <video
+  ref={videoRef}
+  autoPlay
+  playsInline
+  className={!isCameraOn ? "hidden" : "w-full h-full object-cover"}
+/>
+
         {!isCameraOn && (
           <div className="absolute inset-0 flex items-center justify-center text-white text-sm">
             Camera Off
