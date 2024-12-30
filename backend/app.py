@@ -7,14 +7,13 @@ import assemblyai as aai
 # Configure AssemblyAI
 aai.settings.api_key = "1f33e6a5967d4c90aab5e05f3c34dc53"
 
-app = Flask(__name__)  # Corrected __name__ variable
+app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024  # 500 MB upload limit
 
 @app.route('/extract_audio_video', methods=['POST'])
 def extract_audio_and_analyze():
     try:
-        
         video_file = request.files.get('file')
         if not video_file or video_file.filename == '':
             print("No video file received")
@@ -39,19 +38,26 @@ def extract_audio_and_analyze():
         try:
             transcriber = aai.Transcriber()
             transcript = transcriber.transcribe(audio_output_path)
-            print(f"Transcription successful: {transcript['text']}")
+
+            # Check if the object has a `text` attribute
+            if hasattr(transcript, 'text'):
+                transcription_text = transcript.text
+                print(f"Transcription successful: {transcription_text}")
+            else:
+                raise ValueError("Transcript object does not have a 'text' attribute")
+
         except Exception as e:
             print(f"Error during transcription: {str(e)}")
             return jsonify({"error": "Transcription failed", "details": str(e)}), 500
 
         return jsonify({
             "message": "Audio extracted and transcribed successfully",
-            "transcription": transcript['text']
+            "transcription": transcription_text
         })
 
     except Exception as e:
         print(f"Unexpected error: {str(e)}")
         return jsonify({"error": "Unexpected error occurred", "details": str(e)}), 500
 
-if __name__ == '__main__':  # Corrected __name__ variable
+if __name__ == '__main__':
     app.run(debug=True)
