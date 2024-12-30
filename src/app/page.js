@@ -269,6 +269,7 @@ export default function InterviewEnvironment() {
         <video
           ref={videoRef}
           autoPlay
+          muted
           playsInline
           className={!isCameraOn ? "hidden" : "visible w-full h-full"} />
            </div> 
