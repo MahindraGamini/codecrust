@@ -86,14 +86,18 @@ export default function InterviewEnvironment() {
       setCameraStream(null);
       setIsCameraOn(false);
     }
+
     if (mediaRecorder && mediaRecorder.state !== "inactive") {
       mediaRecorder.stop();
     }
+
+    // Clear recorded chunks when stopping the camera
+    setRecordedChunks([]);
   };
 
   const startRecording = () => {
     if (mediaRecorder && mediaRecorder.state === "inactive") {
-      setRecordedChunks([]);
+      setRecordedChunks([]); // Clear previous recordings
       mediaRecorder.start();
       setIsRecording(true);
 
@@ -120,18 +124,14 @@ export default function InterviewEnvironment() {
   const uploadRecording = async (blob) => {
     const formData = new FormData();
     formData.append("file", blob, "uploaded_video.mp4");
-  
+
     try {
       const response = await fetch("http://127.0.0.1:5000/extract_audio_video", {
         method: "POST",
         body: formData,
         mode: "cors",
       });
-  
-    
-      const responseClone = response.clone();
-      console.log("Response clone:", await responseClone.json());
-  
+
       if (response.ok) {
         const data = await response.json();
         console.log("Response Data:", data);
@@ -145,7 +145,6 @@ export default function InterviewEnvironment() {
       console.error("Error uploading video:", error);
     }
   };
-  
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -267,33 +266,13 @@ export default function InterviewEnvironment() {
         </div>
       </div>
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-black rounded-full shadow-lg overflow-hidden border border-gray-300">
-      <video
-  ref={videoRef}
-  autoPlay
-  playsInline
-  className={!isCameraOn ? "hidden" : "w-full h-full object-cover"}
-/>
-
-        {!isCameraOn && (
-          <div className="absolute inset-0 flex items-center justify-center text-white text-sm">
-            Camera Off
-          </div>
-        )}
-      </div>
-      <div className="mt-4 flex justify-end space-x-2 px-4">
-        <Button onClick={isCameraOn ? stopCamera : startCamera} variant={isCameraOn ? "destructive" : "default"}>
-          <Camera className="mr-2" />
-          {isCameraOn ? "Stop Camera" : "Start Camera"}
-        </Button>
-        <Button onClick={toggleFullscreen} variant="outline">
-          {isFullscreen ? <Minimize2 className="mr-2" /> : <Maximize2 className="mr-2" />}
-          {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-        </Button>
-        <Button onClick={isRecording ? stopRecording : startRecording}>
-          {isRecording ? "Stop Recording" : "Start Recording"}
-        </Button>
-        <Button onClick={handleRunCode}>Run Code</Button>
-      </div>
-    </div>
-  );
-}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          className={!isCameraOn ? "hidden" : "visible w-full h-full"} />
+           </div> 
+           <div className="fixed bottom-6 right-6 space-y-2"> {!isCameraOn ? ( <Button onClick={startCamera}> <Camera className="mr-2 h-4 w-4" /> Start Camera </Button> ) : ( <Button variant="destructive" onClick={stopCamera}> 
+            <Camera className="mr-2 h-4 w-4" /> Stop Camera </Button> )} {!isRecording ? ( <Button onClick={startRecording}>Start Recording</Button> ) : ( <Button variant="destructive" onClick={stopRecording}> Stop Recording </Button> )}
+             <Button onClick={toggleFullscreen}> {isFullscreen ? ( <> <Minimize2 className="mr-2 h-4 w-4" /> Exit Fullscreen </> ) : ( <> <Maximize2 className="mr-2 h-4 w-4" /> Fullscreen </> )} </Button>
+              <Button onClick={handleRunCode} className="bg-blue-500 text-white"> Run Code </Button> </div> </div> ); }
