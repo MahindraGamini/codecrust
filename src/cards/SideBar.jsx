@@ -64,7 +64,7 @@ export function CodeCrestSidebar() {
             <SidebarMenuButton asChild>
               <Link href="/video-recording" className="flex items-center">
                 <VideoIcon className="h-4 w-4" />
-                <span> Recordings</span>
+                <span> Your Results</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

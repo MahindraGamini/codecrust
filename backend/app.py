@@ -4,12 +4,11 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 import os
 import assemblyai as aai
 
-# Configure AssemblyAI
 aai.settings.api_key = "1f33e6a5967d4c90aab5e05f3c34dc53"
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
-app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024  # 500 MB upload limit
+app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024 
 
 @app.route('/extract_audio_video', methods=['POST'])
 def extract_audio_and_analyze():
@@ -19,12 +18,12 @@ def extract_audio_and_analyze():
             print("No video file received")
             return jsonify({"error": "No video file provided"}), 400
 
-        # Save uploaded video
+        
         video_path = "uploaded_video.mp4"
         video_file.save(video_path)
         print(f"Video saved at {video_path}")
-
-        # Extract audio from the video
+        
+       
         audio_output_path = "extracted_audio.wav"
         try:
             video = VideoFileClip(video_path)
@@ -34,12 +33,12 @@ def extract_audio_and_analyze():
             print(f"Error extracting audio: {str(e)}")
             return jsonify({"error": "Error processing video", "details": str(e)}), 500
 
-        # Transcribe audio using AssemblyAI
+        
         try:
             transcriber = aai.Transcriber()
             transcript = transcriber.transcribe(audio_output_path)
 
-            # Check if the object has a `text` attribute
+            
             if hasattr(transcript, 'text'):
                 transcription_text = transcript.text
                 print(f"Transcription successful: {transcription_text}")

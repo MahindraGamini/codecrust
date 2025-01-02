@@ -2,8 +2,11 @@ from flask import Flask, jsonify, request
 import json
 import os
 import traceback
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+
 
 # Load the JSON data from a file
 PROBLEMS_FILE = 'fs.json'
@@ -33,6 +36,18 @@ def load_problems():
         print(traceback.format_exc())
         raise e
 
+@app.route('/api/problems-summary', methods=['GET'])
+def get_problems_summary():
+    problems = load_problems()
+    try:
+        summary = {
+            "easy": len(problems.get("easy", [])),
+            "medium": len(problems.get("medium", [])),
+            "hard": len(problems.get("hard", [])),
+        }
+        return jsonify(summary)
+    except Exception as e:
+        return jsonify({"error": "An unexpected error occurred"}), 500
 
 @app.route('/api/topic/<string:topic>', methods=['GET'])
 def get_problems_by_topic(topic):
@@ -46,6 +61,18 @@ def get_problems_by_topic(topic):
         return jsonify({"error": f"No problems found for topic '{topic}'"}), 404
 
     return jsonify({"problems": topic_problems})
+@app.route('/api/user-progress', methods=['GET'])
+def get_user_progress():
+    try:
+        problems = load_problems()
+        total_problems = sum(len(topic) for topic in problems.values())
+      
+        solved_problems = 24  
+        return jsonify({"total_problems": total_problems, "solved_problems": solved_problems})
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({"error": "An unexpected error occurred"}), 500
 
 @app.route('/api/problems', methods=['GET'])
 def get_problems():

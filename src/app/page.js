@@ -276,4 +276,7 @@ export default function InterviewEnvironment() {
            <div className="fixed bottom-6 right-6 space-y-2"> {!isCameraOn ? ( <Button onClick={startCamera}> <Camera className="mr-2 h-4 w-4" /> Start Camera </Button> ) : ( <Button variant="destructive" onClick={stopCamera}> 
             <Camera className="mr-2 h-4 w-4" /> Stop Camera </Button> )} {!isRecording ? ( <Button onClick={startRecording}>Start Recording</Button> ) : ( <Button variant="destructive" onClick={stopRecording}> Stop Recording </Button> )}
              <Button onClick={toggleFullscreen}> {isFullscreen ? ( <> <Minimize2 className="mr-2 h-4 w-4" /> Exit Fullscreen </> ) : ( <> <Maximize2 className="mr-2 h-4 w-4" /> Fullscreen </> )} </Button>
-              <Button onClick={handleRunCode} className="bg-blue-500 text-white"> Run Code </Button> </div> </div> ); }
+              <Button onClick={handleRunCode} className="bg-blue-500 text-white"> Run Code </Button> 
+              </div>
+              
+               </div> ); }
