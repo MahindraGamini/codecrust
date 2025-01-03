@@ -19,7 +19,7 @@ def load_problems():
         with open(PROBLEMS_FILE, 'r') as f:
             data = json.load(f)
 
-        # Transform the JSON structure to create a topic-wise dictionary
+        
         problems = {}
         for topic in data:  # Iterate through top-level objects
             for key, value in topic.items():  # Access keys inside each top-level dictionary

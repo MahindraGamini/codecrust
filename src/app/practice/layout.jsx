@@ -22,7 +22,7 @@ export default function DashboardLayout({ children }) {
           <header className="flex h-16 items-center justify-between border-b bg-white px-4">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="md:hidden" />
-              <h1 className="text-xl font-semibold">Dashboard</h1>
+              <h1 className="text-2xl  font-bold tracking-tight">Dashboard</h1>
             </div>
             <div className="flex items-center gap-4">
               <Dialog>
