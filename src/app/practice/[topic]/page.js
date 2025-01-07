@@ -20,7 +20,6 @@ const TopicPage = async ({ params }) => {
     marginBottom: '1.5rem',
   };
 
-  // Function to format the topic name
   const formatTopicName = (topicName) => {
     return topicName
       .split(' ')

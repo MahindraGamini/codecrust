@@ -4,11 +4,13 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BookOpen, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const TopicProblems = ({ topic }) => {
   const [problems, setProblems] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const route=useRouter();
 
   useEffect(() => {
     const fetchProblems = async () => {
@@ -41,7 +43,7 @@ const TopicProblems = ({ topic }) => {
   };
 
   const handleSolve = (problemId) => {
-    console.log(`Navigating to problem ${problemId}`);
+    route.push(`${topic}/${problemId}`);
   };
 
   if (loading) {
