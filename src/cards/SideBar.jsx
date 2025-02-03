@@ -29,7 +29,7 @@ export function CodeCrestSidebar() {
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton className="w-full">
                   <Code2 className="h-4 w-4" />
-                  <span>DSA Practice</span>
+                  <span>Practice</span>
                   <ChevronDown className="ml-auto h-4 w-4" />
                 </SidebarMenuButton>
               </CollapsibleTrigger>
@@ -37,22 +37,22 @@ export function CodeCrestSidebar() {
                 <SidebarMenuSub>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton asChild>
-                      <Link href="/dsa-practice/arrays">Arrays</Link>
+                      <Link href="/practice/array">Arrays</Link>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton asChild>
-                      <Link href="/dsa-practice/linked-lists">Linked Lists</Link>
+                      <Link href="/practice/linked list">Linked Lists</Link>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton asChild>
-                      <Link href="/dsa-practice/trees">Trees</Link>
+                      <Link href="/practice/tree">Trees</Link>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton asChild>
-                      <Link href="/dsa-practice/graphs">Graphs</Link>
+                      <Link href="/practice/graph">Graphs</Link>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 </SidebarMenuSub>
