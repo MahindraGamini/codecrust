@@ -61,6 +61,36 @@ def get_problems_by_topic(topic):
         return jsonify({"error": f"No problems found for topic '{topic}'"}), 404
 
     return jsonify({"problems": topic_problems})
+
+@app.route('/api/topic/<string:topic>/<int:problem_id>', methods=['GET'])
+def get_problem_by_topic_and_id(topic, problem_id):
+    try:
+        problems = load_problems()
+        
+        # Normalize topic to lowercase for case-insensitive search
+        topic_problems = problems.get(topic.lower(), None)
+        
+        if not topic_problems:
+            return jsonify({"error": f"No problems found for topic '{topic}'"}), 404
+
+        # Find the problem with the given ID
+        problem = next((p for p in topic_problems if p.get('id') == problem_id), None)
+
+        if not problem:
+            return jsonify({"error": f"No problem found with ID {problem_id} in topic '{topic}'"}), 404
+
+        return jsonify(problem)
+
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 500
+    except json.JSONDecodeError as e:
+        return jsonify({"error": "Error parsing JSON file. Please check the file format."}), 500
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+
 @app.route('/api/user-progress', methods=['GET'])
 def get_user_progress():
     try:

@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Minimize2, Maximize2, Play } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { QuestionDisplay } from "@/components/question-display"
-import { VideoRecorder } from "@/components/Video-recording"
+import { QuestionDisplay } from "./question-display"
+import { VideoRecorder } from "./Video-recording"
 
 export default function InterviewEnvironment() {
   const { topic, id } = useParams()
