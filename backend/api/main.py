@@ -61,8 +61,7 @@ def get_problems_by_topic(topic):
         return jsonify({"error": f"No problems found for topic '{topic}'"}), 404
 
     return jsonify({"problems": topic_problems})
-
-@app.route('/api/topic/<string:topic>/<int:problem_id>', methods=['GET'])
+@app.route('/api/<string:topic>/<int:problem_id>', methods=['GET'])
 def get_problem_by_topic_and_id(topic, problem_id):
     try:
         problems = load_problems()
@@ -146,4 +145,5 @@ def health_check():
     return jsonify({"status": "API is running"})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=3001)
+

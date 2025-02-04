@@ -1,158 +1,139 @@
-"use client"
 
-import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
-import Editor from "@monaco-editor/react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Minimize2, Maximize2, Play } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { QuestionDisplay } from "./question-display"
-import { VideoRecorder } from "./Video-recording"
+import { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Camera, Maximize2, Minimize2, Video, VideoOff } from "lucide-react";
 
-export default function InterviewEnvironment() {
-  const { topic, id } = useParams()
-  const [question, setQuestion] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const [code, setCode] = useState("")
-  const [thoughtProcess, setThoughtProcess] = useState("")
-  const [output, setOutput] = useState("")
+const InterviewEnvironment = () => {
+  const videoRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const [isCameraOn, setIsCameraOn] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [recordedChunks, setRecordedChunks] = useState([]);
+  const [transcription, setTranscription] = useState(null);  // To store transcription result
 
-  useEffect(() => {
-    const fetchQuestion = async () => {
-      try {
-        const response = await fetch(`http://127.0.0.1:5000/api/topic/${topic}/${id}`)
-        if (!response.ok) {
-          throw new Error("Failed to fetch question")
-        }
-        const data = await response.json()
-        setQuestion(data)
-        setCode(data.starter_code || "")
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
       }
+      setIsCameraOn(true);
+      mediaRecorderRef.current = new MediaRecorder(stream);
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    setIsCameraOn(false);
+  };
+
+  const startRecording = () => {
+    if (!mediaRecorderRef.current) {
+      alert("Camera is not started! Please start the camera first.");
+      return;
     }
 
-    if (id) {
-      fetchQuestion()
+    setRecordedChunks([]);
+    mediaRecorderRef.current.start();
+    setIsRecording(true);
+
+    mediaRecorderRef.current.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        setRecordedChunks((prev) => [...prev, event.data]);
+      }
+    };
+  };
+
+  const stopRecording = async () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      mediaRecorderRef.current.onstop = async () => {
+        if (recordedChunks.length > 0) {
+          const blob = new Blob(recordedChunks, { type: "video/mp4" });
+          const videoFile = new File([blob], "recorded_video.mp4", { type: "video/mp4" });
+
+          const formData = new FormData();
+          formData.append("file", videoFile);
+
+          try {
+            const response = await fetch("http://localhost:5000/extract_audio_video", {
+              method: "POST",
+              body: formData,
+            });
+            const result = await response.json();
+
+            if (response.ok) {
+              setTranscription(result.transcription);  // Store transcription in state
+              console.log("Transcription:", result.transcription);
+            } else {
+              console.error("Error:", result.error);
+            }
+          } catch (error) {
+            console.error("Error uploading video:", error);
+          }
+        }
+      };
     }
-  }, [id, topic])
+  };
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen()
-      setIsFullscreen(true)
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
     } else {
-      document.exitFullscreen()
-      setIsFullscreen(false)
+      document.exitFullscreen();
+      setIsFullscreen(false);
     }
-  }
-
-  const handleEditorChange = (value) => {
-    setCode(value)
-  }
-
-  const handleRunCode = async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:5000/run_code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      })
-
-      const result = await response.json()
-      setOutput(result.output)
-    } catch (err) {
-      setOutput("Error running code: " + err.message)
-    }
-  }
-
-  if (loading) return <div className="p-4 text-blue-500">Loading...</div>
-  if (error) return <div className="p-4 text-red-500">{error}</div>
-  if (!question) return <div className="p-4 text-red-500">Question not found.</div>
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
-      <header className="bg-white shadow-md p-4">
-        <h1 className="text-2xl font-bold text-gray-800">{topic} Interview</h1>
-      </header>
-
-      <main className="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
-        <QuestionDisplay question={question} />
-
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                <span>Code Editor</span>
-                <Button onClick={handleRunCode} size="sm">
-                  <Play className="w-4 h-4 mr-2" />
-                  Run Code
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Editor
-                height="300px"
-                language="python"
-                theme="vs-dark"
-                value={code}
-                onChange={handleEditorChange}
-                options={{ minimap: { enabled: false } }}
-              />
-            </CardContent>
-          </Card>
-
-          <AnimatePresence>
-            {output && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Output</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <pre className="bg-gray-800 text-white p-3 rounded-md overflow-x-auto">{output}</pre>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Thought Process</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                placeholder="Write your thought process..."
-                value={thoughtProcess}
-                onChange={(e) => setThoughtProcess(e.target.value)}
-                rows={4}
-                className="w-full"
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </main>
-
-      <VideoRecorder />
-
+    <div className="relative flex flex-col items-center justify-center w-full h-full">
+      <video ref={videoRef} autoPlay className="w-full max-w-3xl h-auto rounded-lg shadow-lg" />
+      
       <div className="fixed bottom-6 right-6 space-y-2">
-        <Button onClick={toggleFullscreen} className="rounded-full w-12 h-12 flex items-center justify-center">
-          {isFullscreen ? <Minimize2 /> : <Maximize2 />}
+        {!isCameraOn ? (
+          <Button onClick={startCamera}>
+            <Camera className="mr-2 h-4 w-4" /> Start Camera
+          </Button>
+        ) : (
+          <Button variant="destructive" onClick={stopCamera}>
+            <VideoOff className="mr-2 h-4 w-4" /> Stop Camera
+          </Button>
+        )}
+
+        {isCameraOn && !isRecording ? (
+          <Button onClick={startRecording}>
+            <Video className="mr-2 h-4 w-4" /> Start Recording
+          </Button>
+        ) : isRecording ? (
+          <Button variant="destructive" onClick={stopRecording}>
+            <VideoOff className="mr-2 h-4 w-4" /> Stop Recording
+          </Button>
+        ) : null}
+
+        <Button onClick={toggleFullscreen}>
+          {isFullscreen ? <Minimize2 className="mr-2 h-4 w-4" /> : <Maximize2 className="mr-2 h-4 w-4" />}
+          {isFullscreen ? "Exit Fullscreen" : "Go Fullscreen"}
         </Button>
+
+        {/* Display transcription result */}
+        {transcription && (
+          <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+            <h3 className="text-lg font-semibold">Transcription:</h3>
+            <p>{transcription}</p>
+          </div>
+        )}
       </div>
     </div>
-  )
-}
+  );
+};
 
+export default InterviewEnvironment;
