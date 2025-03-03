@@ -263,7 +263,7 @@ const InterviewEnvironment = () => {
         </div>
       </div>
 
-      {/* Camera and Recording Controls */}
+
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-black rounded-full shadow-lg overflow-hidden border border-gray-300">
         <video
           ref={videoRef}
@@ -273,7 +273,8 @@ const InterviewEnvironment = () => {
           className={!isCameraOn ? "hidden" : "visible w-full h-full"}
         />
       </div>
-      <div className="fixed bottom-6 right-6 space-y-2">
+
+      <div className="fixed bottom-6 right-6 space-x-4">
         {!isCameraOn ? (
           <Button onClick={startCamera}>
             <Camera className="mr-2 h-4 w-4" /> Start Camera
