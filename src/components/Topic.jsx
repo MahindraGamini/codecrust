@@ -17,7 +17,7 @@ const TopicProblems = ({ topic }) => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`http://127.0.0.1:5000/api/topic/${topic}`);
+        const response = await fetch(`http://127.0.0.1:3001/api/topic/${topic}`);
         const data = await response.json();
         setProblems(data.problems);
       } catch (err) {

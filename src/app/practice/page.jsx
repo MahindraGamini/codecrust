@@ -14,7 +14,7 @@ const PracticeCard = () => {
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/api/problems");
+        const response = await fetch("http://127.0.0.1:3001/api/problems");
         if (!response.ok) throw new Error("Failed to fetch topics");
         const data = await response.json();
         setTopics(Object.keys(data));

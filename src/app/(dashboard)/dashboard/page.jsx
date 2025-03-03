@@ -20,7 +20,7 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchProgress() {
       try {
-        const response = await fetch("http://127.0.0.1:5000/api/user-progress"); // Update with your backend URL
+        const response = await fetch("http://127.0.0.1:3001/api/user-progress"); // Update with your backend URL
         const data = await response.json();
         setProgress({
           totalProblems: data.total_problems ||0,

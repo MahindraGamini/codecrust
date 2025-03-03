@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
-  Code2, VideoIcon, BookOpen, Settings, LogOut, ChevronDown 
+  Code2, VideoIcon, BookOpen, Settings, LogOut, ChevronDown, BrainCircuit 
 } from 'lucide-react'
 import { 
   Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubItem, SidebarMenuSubButton, 
@@ -62,7 +62,7 @@ export function CodeCrestSidebar() {
 
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link href="/video-recording" className="flex items-center">
+              <Link href="/results" className="flex items-center">
                 <VideoIcon className="h-4 w-4" />
                 <span> Your Results</span>
               </Link>
@@ -71,9 +71,18 @@ export function CodeCrestSidebar() {
 
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link href="/study-materials" className="flex items-center">
+              <Link href="https://stack-overflow-nextjs-wgbn.vercel.app/" className="flex items-center">
                 <BookOpen className="h-4 w-4" />
-                <span>Study Materials</span>
+                <span>Community</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/test" className="flex items-center">
+                <BrainCircuit className="h-4 w-4" />
+                <span>Test Your Knowledge</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -113,8 +122,6 @@ export function CodeCrestSidebar() {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                
-                  
                 <SignOutButton/>
               </SidebarMenuButton>
             </SidebarMenuItem>
